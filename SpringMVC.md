@@ -137,3 +137,251 @@ http://localhost:8080/springMVCProject/index/login
 #### 基于注解的控制器的优点
 - 在基于注解的控制器中可以编写多个处理方法，进而可以处理多个请求（动作），这就允许将相关的操作编写在同一个控制器类中，从而减少控制器类的数量，方便以后的维护
 - 基于注解的控制器不需要再配置文件中部署映射，仅需要使用RequestMapping 注解类型注解一个方法进行请求处理。
+
+
+## 请求处理方法常见的返回类型
+ModelAndView、Model、View
+
+## Spring MVC 获取参数的几种常见方式
+
+### 1.通过实体Bean接收请求参数
+**Controller**
+```java
+
+@Controller
+@RequestMapping("/user")
+public class UserController {
+    // 得到一个用来记录日志的对象，这样在打印信息的时候能够标记打印的是哪个类的信息
+    private static final Log logger = LogFactory.getLog(UserController.class);
+    /**
+     * 处理登录 使用UserForm对象(实体Bean) user接收注册页面提交的请求参数
+     */
+    @RequestMapping("/login")
+    public String login(UserForm user, HttpSession session, Model model) {
+        if ("zhangsan".equals(user.getUname())
+                && "123456".equals(user.getUpass())) {
+            session.setAttribute("u", user);
+            logger.info("成功");
+            return "main"; // 登录成功，跳转到 main.jsp
+        } else {
+            logger.info("失败");
+            model.addAttribute("messageError", "用户名或密码错误");
+            return "login";
+        }
+    }
+    /**
+     * 处理注册 使用UserForm对象(实体Bean) user接收注册页面提交的请求参数
+     */
+    @RequestMapping("/register")
+    public String register(UserForm user, Model model) {
+        if ("zhangsan".equals(user.getUname())
+                && "123456".equals(user.getUpass())) {
+            logger.info("成功");
+            return "login"; // 注册成功，跳转到 login.jsp
+        } else {
+            logger.info("失败");
+            // 在register.jsp页面上可以使用EL表达式取出model的uname值
+            model.addAttribute("uname", user.getUname());
+            return "register"; // 返回 register.jsp
+        }
+    }
+}
+````
+**View**
+```html
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+    <form action="${pageContext.request.contextPath }/user/register" method="post" name="registForm">
+        <table border=1 bgcolor="lightblue" align="center">
+            <tr>
+                <td>姓名：</td>
+                <td>
+                    <input class="textSize" type="text" name="uname" value="${uname }" />
+                </td>
+            </tr>
+            <tr>
+                <td>密码：</td>
+                <td>
+                    <input class="textSize" type="password" maxlength="20" name="upass" />
+                </td>
+            </tr>
+            <tr>
+                <td>确认密码：</td>
+                <td>
+                    <input class="textSize" type="password" maxlength="20" name="reupass" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" align="center">
+                    <input type="button" value="注册" onclick="allIsNull() " />
+                </td>
+            </tr>
+        </tab1e>
+    </form>
+</body>
+</html>
+```
+### 2.通过处理方法的形参接收请求参数
+直接把表单参数卸载控制器类相关方法的形参中，即形参名称与请求参数名称完全相同。
+```java
+@RequestMapping("/register")
+/**
+* 通过形参接收请求参数，形参名称与请求参数名称完全相同
+*/
+public String register(String uname,String upass,Model model) {
+    if ("zhangsan".equals(uname)
+            && "123456".equals(upass)) {
+        logger.info("成功");
+        return "login"; // 注册成功，跳转到 login.jsp
+    } else {
+        logger.info("失败");
+        // 在register.jsp页面上可以使用EL表达式取出model的uname值
+        model.addAttribute("uname", uname);
+        return "register"; // 返回 register.jsp
+    }
+}
+```
+
+### 3.通过HttpServletRequest接收请求参数
+```java
+@RequestMapping("/register")
+/**
+* 通过HttpServletRequest接收请求参数
+*/
+public String register(HttpServletRequest request,Model model) {
+    String uname = request.getParameter("uname");
+    String upass = request.getParameter("upass");
+    if ("zhangsan".equals(uname)
+            && "123456".equals(upass)) {
+        logger.info("成功");
+        return "login"; // 注册成功，跳转到 login.jsp
+    } else {
+        logger.info("失败");
+        // 在register.jsp页面上可以使用EL表达式取出model的uname值
+        model.addAttribute("uname", uname);
+        return "register"; // 返回 register.jsp
+    }
+}
+```
+
+### 4.通过@PathVariable获取URL中的参数（解析url上的参数）
+```java
+@Controller
+@RequestMapping("/user")
+public class UserController {
+    @RequestMapping("/user")
+    // 必须节method属性
+    /**
+     * 通过@PathVariable获取URL的参数
+     */
+    public String register(@PathVariable String uname,@PathVariable String upass,Model model) {
+        if ("zhangsan".equals(uname)
+                && "123456".equals(upass)) {
+            logger.info("成功");
+            return "login"; // 注册成功，跳转到 login.jsp
+        } else {
+            // 在register.jsp页面上可以使用EL表达式取出model的uname值
+            model.addAttribute("uname", uname);
+            return "register"; // 返回 register.jsp
+        }
+    }
+}
+```
+
+在访问“http://localhost：8080/springMVCProject/user/register/zhangsan/123456” 路径，上述代码自动将 URL 中的模板变量 {uname} 和 {upass} 绑定到通过 @PathVariable 注解的同名参数上，即 uname=zhangsan、upass=123456。
+
+### 5.通过@RequestParam接收请求参数
+```java
+@RequestMapping("/register")
+/**
+* 通过@RequestParam接收请求参数
+*/
+public String register(@RequestParam String uname,
+    @RequestParam String upass, Model model) {
+    if ("zhangsan".equals(uname) && "123456".equals(upass)) {
+        logger.info("成功");
+        return "login"; // 注册成功，跳转到 login.jsp
+    } else {
+        // 在register.jsp页面上可以使用EL表达式取出model的uname值
+        model.addAttribute("uname", uname);
+        return "register"; // 返回 register.jsp
+    }
+}
+```
+通过 @RequestParam 接收请求参数与“通过处理方法的形参接收请求参数”部分的区别如下：当请求参数与接收参数名不一致时，“通过处理方法的形参接收请求参数”不会报 404 错误，而“通过 @RequestParam 接收请求参数”会报 404 错误。
+
+### 6.通过@ModelAttribute接收请求参数
+```java
+@RequestMapping("/register")
+public String register(@ModelAttribute("user") UserForm user) {
+    if ("zhangsan".equals(uname) && "123456".equals(upass)) {
+        logger.info("成功");
+        return "login"; // 注册成功，跳转到 login.jsp
+    } else {
+        logger.info("失败");
+        // 使用@ModelAttribute("user")与model.addAttribute("user",user)的功能相同
+        //register.jsp页面上可以使用EL表达式${user.uname}取出ModelAttribute的uname值
+        return "register"; // 返回 register.jsp
+    }
+}
+```
+
+## Spring MVC的转发与重定向
+
+### 重定向
+重定向是将用户从当前处理请求定向到另一个视图或处理请求。以前的request中存放的信息全部失效，并进入一个新的request作用域
+### 转发
+转发是将用户对当前处理的请求转发给另一个视图或处理请求，以前的request中存放的信息不会失效
+
+**转发是服务器行为，重定向是客户端行为**
+
+### 转发过程
+客户浏览器发送http请求，Web服务器接收此请求，调用内部的一个方法再容器内完成请求处理和转发动作，将目标资源发给客户；在这里转发的路径必须是同一个Web容器下的URL，其他不能转向到其他的Web路径上，中间传递的是自己的容器内的request
+
+### 重定向过程
+客户浏览器发送http请求，Web服务器接受后发送302状态码响应及对应新的location给客户浏览器，客户浏览器发现是302响应，则自动再发送一个新的http请求，请求URL是新的location地址，服务器根据此请求寻找资源并发送给客户。
+
+### 转发和重定向总结
+转发是服务器将获取的request在内部进行传递
+重定向是客户和服务器的交涉，服务器给客户新地址让客户根据新地址寻找资源
+**重定向行为是浏览器做了至少两次的访问请求，客户可以观察到地址的变化**
+
+
+### Spring MVC转发示例
+#### 1.return转发（转发到View）
+```java
+@RequestMapping("/register")
+public String register() {
+    return "register";  //转发到register.jsp
+}
+```
+
+#### 2.重定向与转发
+```java
+@Controller
+@RequestMapping("/index")
+public class IndexController {
+    @RequestMapping("/login")
+    public String login() {
+        //转发到一个请求方法（同一个控制器类可以省略/index/）
+        return "forward:/index/isLogin";
+    }
+    @RequestMapping("/isLogin")
+    public String isLogin() {
+        //重定向到一个请求方法
+        return "redirect:/index/isRegister";
+    }
+    @RequestMapping("/isRegister")
+    public String isRegister() {
+        //转发到一个视图
+        return "register";
+    }
+}
+```
