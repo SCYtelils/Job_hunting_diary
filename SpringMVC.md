@@ -351,6 +351,15 @@ public String register(@ModelAttribute("user") UserForm user) {
 ### 转发和重定向总结
 转发是服务器将获取的request在内部进行传递
 重定向是客户和服务器的交涉，服务器给客户新地址让客户根据新地址寻找资源
+在springMVC中，不管是重定向或是转发，都需要符合视图解析器的配置。
+如果要转发：
+```java
+return "forward:/html/my.html";
+```
+则需要使用mvc: resources配置
+```xml
+<mvc:resources location="/html/" mapping="/html/**" />
+```
 **重定向行为是浏览器做了至少两次的访问请求，客户可以观察到地址的变化**
 
 
@@ -385,3 +394,8 @@ public class IndexController {
     }
 }
 ```
+
+## 应用@Autowired和@Service进行依赖注入
+在service层的类上添加@Service注解
+在Controller中使用，将依赖注入到一个属性（成员变量）或方法
+然后Service层的对象可以不利用构造方法直接使用。
