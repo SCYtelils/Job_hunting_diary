@@ -399,3 +399,39 @@ public class IndexController {
 在service层的类上添加@Service注解
 在Controller中使用，将依赖注入到一个属性（成员变量）或方法
 然后Service层的对象可以不利用构造方法直接使用。
+
+## ModelAttribute
+### 1.绑定请求参数到肢体对象（表单的命令对象）
+```java
+@RequestMapping("/register")
+public String register(@ModelAttribute("user") UserForm user) {
+    if ("zhangsan".equals(uname) && "123456".equals(upass)) {
+        logger.info("成功");
+        return "login";
+    } else {
+        logger.info("失败");
+        return "register";
+}
+```
+
+上述代码的@ModelAttribute注解功能有两个
++ 将请求参数的输入封装到user对象中
++ 创建UserForm实例
+
+@ModelAttribute("user") UserForm user
+**该注解等同于model.addAttribute("user",user)**
+@ModelAttribute UserForm user
+**若无键值，则UserForm实例时以userForm为键值存储在Model对象中**
+**该注解等同于model.addAttribute("userForm",user)**
+
+### 2.注解一个非请求处理方法
+被@ModelAttribute注解的方法将在**每次调用该Controller类的请求处理方法前**被调用。
+*这种特性可以用来控制登陆权限*
+
+## 类型转换
+在springMVC中，从前端传回来的值一般会和数据库中的某一个表匹配，因此需要转换成对象，然后向数据库传值。
+### 1.标量转换器
+
+| 名称 | 作用 |
+| --- | --- |
+| StringToBooleanConverter | String 到 boolean 类型转换 |
