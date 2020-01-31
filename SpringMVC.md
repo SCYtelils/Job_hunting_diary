@@ -428,10 +428,54 @@ public String register(@ModelAttribute("user") UserForm user) {
 被@ModelAttribute注解的方法将在**每次调用该Controller类的请求处理方法前**被调用。
 *这种特性可以用来控制登陆权限*
 
-## 类型转换
-在springMVC中，从前端传回来的值一般会和数据库中的某一个表匹配，因此需要转换成对象，然后向数据库传值。
+## 类型转换（Converter）
+在springMVC中，从前端传回来的值一般会和数据库中的某一个表匹配，因此需要转换成对象，然后向数据库传值。在使用内置类型转换器时，请求参数输入值与接收参数类型需要兼容，否则会报400错误。
 ### 1.标量转换器
 
 | 名称 | 作用 |
 | --- | --- |
 | StringToBooleanConverter | String 到 boolean 类型转换 |
+| ObjectToStringConverter | 	Object 到 String 转换，调用 toString 方法转换 |
+| StringToNumberConverterFactory | String 到数字转换（例如 Integer、Long 等）|
+| NumberToNumberConverterFactory | 数字子类型（基本类型）到数字类型（包装类型）转换 |
+| StringToCharacterConverter | String 到 Character 转换，取字符串中的第一个字符 |
+| NumberToCharacterConverter | 数字子类型到 Character 转换 |
+| CharacterToNumberFactory | Character 到数字子类型转换 |
+| StringToEnumConverterFactory | String 到枚举类型转换，通过 Enum.valueOf 将字符串转换为需要的枚举类型 |
+| EnumToStringConverter | 枚举类型到 String 转换，返回枚举对象的 name 值 |
+| StringToLocaleConverter	 | String 到 java.util.Locale 转换 |
+| PropertiesToStringConverter | java.util.Properties 到 String 转换，默认通过 ISO-8859-1 解码 |
+| StringToPropertiesConverter	  | String 到 java.util.Properties 转换，默认使用 ISO-8859-1 编码 |
+
+### 2.集合转换器
+[集合转换器](http://c.biancheng.net/view/4415.html)
+
+### 3.自定义类型转换器
+当基本的类型转换器不能满足程序员的需要，程序员可以自定义类型转换器，此时需要继承Converter<,>接口。
+一般需要完成以下步骤：
++ 创建实体类。
++ 创建控制器类。
++ 创建自定义类型转换器类。
++ 注册类型转换器。
++ 创建相关视图。
+**注册类型转换器**
+例子：
+```xml
+<bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <list>
+                <bean class="converter.GoodsConverter"/>
+            </list>
+        </property>
+    </bean>
+```
+
+## 数据格式化（Formatter）
+Spring MVC 框架的 Formatter<T> 源数据类型必须是String类型
+
+### 内置的格式化转换器
+
+| NumberFormatter | 实现 Number 与 String 之间的解析与格式化。 |
+| CurrencyFormatter | 实现 Number 与 String 之间的解析与格式化（带货币符号）。 |
+| PercentFormatter | 实现 Number 与 String 之间的解析与格式化（带百分数符号）。 |
+| DateFormatter | 实现 Date 与 String 之间的解析与格式化。 |
