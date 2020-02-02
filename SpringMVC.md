@@ -479,3 +479,58 @@ Spring MVC 框架的 Formatter<T> 源数据类型必须是String类型
 | CurrencyFormatter | 实现 Number 与 String 之间的解析与格式化（带货币符号）。 |
 | PercentFormatter | 实现 Number 与 String 之间的解析与格式化（带百分数符号）。 |
 | DateFormatter | 实现 Date 与 String 之间的解析与格式化。 |
+
+### 自定义格式化转换器
+
++ 创建实体类；
++ 创建控制器类；
++ 创建自定义格式化转换器类；
++ 注册格式化转换器；
++ 创建相关视图。
+
+## JSON数据交互
+JSON是基于纯文本的数据结构，他有对象结构和数组结构两种数据结构
+### JSON的对象结构
+对象结构以“{”开始、以“}”结束，中间部分由 0 个或多个以英文“，”分隔的 key/value 对构成，key 和 value 之间以英文“：”分隔。
+```json
+{
+    key1:value1,
+    key2:value2,
+    ...
+}
+```
+key必须是String类型，value可以是String，Number，Object，Array等数据类型。
+例子：
+```json
+{
+    "pname":"张三",
+    "password":"123456",
+    "page":40
+}
+```
+
+### JSON的数组结构
+数组结构以“[”开始、以“]”结束，中间部分由 0 个或多个以英文“，”分隔的值的列表组成。
+```json
+{
+    value1,
+    value2,
+    ...
+}
+```
+### JSON数据结构是可以混搭的
+两种（对象、数组）数据结构也可以分别组合构成更加复杂的数据结构。
+例子：
+```json
+{
+    "sno":"201802228888",
+    "sname":"张三",
+    "hobby":["篮球","足球"]，
+    "college":{
+        "cname":"清华大学",
+        "city":"北京"
+    }
+}
+```
+
+end
